@@ -2,18 +2,20 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/userController");
 
-router.get("/api/get/:id", controller.findAll);
+router.get("/findall", controller.findAll);
 
-router.post("/api/post", controller.addData);
+router.get("/findone/:id", controller.findOne);
 
-router.delete("/api/remove/:id", controller.deleteData);
+router.post("/add_caloriedetails", controller.addData);
 
-router.put("/api/update/:id", controller.updateData);
+router.put("/update/:id", controller.updateData);
 
-router.get("/fooditem/get", controller.getFoodItem);
+router.delete("/remove/:id", controller.deleteData);
 
-router.get("/energyburn/get", controller.getEnergyBurn);
+// router.get("/fooditem/get", controller.getFoodItem);
 
-router.get("/get/sorting/:sort", controller.sorting);
+// router.get("/energyburn/get", controller.getEnergyBurn);
+
+// router.get("/get/sorting/:sort", controller.sorting);
 
 module.exports = router;

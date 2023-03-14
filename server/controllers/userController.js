@@ -1,141 +1,80 @@
-const express = require("express");
-const router = express.Router();
-const db = require("../connection/connection");
-
-// get all data
-exports.findAll = (req, res) => {
-  const { id } = req.params;
-  // console.log("fk-------<", id);
-  const sqlGet = `select * from user where fk=?`;
-  db.query(sqlGet, id, (error, result) => {
-    // console.log(result);
-    res.send(result);
-  });
-};
+const UserDetails = require("../model/user_details");
+const AllUser = require("../model/all_user");
 
 // add data
 exports.addData = (req, res) => {
-  const {
-    date,
-    intakecalorie,
-    targetincalorie,
-    burncalorie,
-    targetburncalorie,
-    fk,
-  } = req.body;
-  console.log("---->", date, intakecalorie);
-  const sqlInsert =
-    "INSERT INTO user(date, intakecalorie, targetincalorie, burncalorie, targetburncalorie, fk) VALUES(?,?,?,?,?,?)";
-  db.query(
-    sqlInsert,
-    [date, intakecalorie, targetincalorie, burncalorie, targetburncalorie, fk],
-    (error, result) => {
-      if (error) console.log(error);
-      else {
-        console.log("insert successful");
-        res.status(200).send(result);
-      }
-    }
-  );
+  const data = new UserDetails(req.body);
+  // console.log(data);
+  data
+    .save()
+    .then((response) => {
+      console.log("response", response);
+      AllUser.findByIdAndUpdate(
+        response.userId,
+        { $push: { user_details: response._id } },
+        { new: true, useFindAndModify: false }
+      )
+        .then((response1) => {
+          console.log("response1", response1);
+          return res.status(200).send(response1);
+        })
+        .catch((err) => {
+          return res.status(500).send(err);
+        });
+    })
+    .catch((err) => {
+      return res.status(500).send(err);
+    });
+};
+
+// get all data
+exports.findAll = async (req, res) => {
+  console.log("findall-");
+  try {
+    const data = await UserDetails.find();
+    return res.status(200).send(data);
+  } catch (err) {
+    return res.status(500).send("Error", err);
+  }
+};
+
+exports.findOne = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const data = await UserDetails.findById(id);
+    return res.status(200).send(data);
+  } catch (err) {
+    return res.status(500).send("Error", err);
+  }
 };
 
 // delete data
-exports.deleteData = (req, res) => {
-  console.log("id-----", req.params);
-  const { id } = req.params;
-  const sqlRemove = "DELETE FROM user WHERE id=?";
-  db.query(sqlRemove, id, (error, result) => {
-    if (error) console.log(error);
-    else {
-      console.log(result);
-      return res.status(200).send(result);
-    }
-  });
+exports.deleteData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await UserDetails.findByIdAndDelete(id);
+    return res.status(200).send(data);
+  } catch (err) {
+    return res.status(500).send(err);
+  }
 };
 
 // update data
-exports.updateData = (req, res) => {
-  const { id } = req.params;
-  const { intakecalorie, targetincalorie, burncalorie, targetburncalorie } =
-    req.body;
-  const sqlUpdate =
-    "UPDATE user SET intakecalorie=?, targetincalorie=?, burncalorie=?, targetburncalorie=? WHERE id= ?";
-  db.query(
-    sqlUpdate,
-    [intakecalorie, targetincalorie, burncalorie, targetburncalorie, id],
-    (error, result) => {
-      if (error) {
-        console.log(error);
-      }
-      res.send(result);
-    }
-  );
+exports.updateData = async (req, res) => {
+  try {
+    const result = await UserDetails.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    return res.status(200).send(result);
+  } catch (err) {
+    return res.status(500).send(err);
+  }
 };
 
 // get food item
-exports.getFoodItem = (req, res) => {
-  const sqlGet = "SELECT * FROM fooditem";
-  db.query(sqlGet, (error, result) => {
-    // console.log(result);
-    res.send(result);
-  });
-};
+exports.getFoodItem = (req, res) => {};
 
 // get energy burn
-exports.getEnergyBurn = (req, res) => {
-  const sqlGet = "SELECT * FROM exercise";
-  db.query(sqlGet, (error, result) => {
-    // console.log(result);
-    res.send(result);
-  });
-};
-
-// searching
-exports.searching = (req, res) => {
-  const value = req.params.value;
-  console.log(value);
-  let data = `select * from gps where DeviceId like '%${value}%' or DeviceType like '%${value}%'`;
-  connection.query(data, (err, result) => {
-    if (err) {
-      return res.status(500).send(err);
-    } else {
-      return res.status(200).send(dateTime(result));
-    }
-  });
-};
-
-// sorting
-exports.sorting = (req, res) => {
-  const { sort } = req.params;
-  const { id } = req.body;
-  // const data = JOSN.parse(localStorage.getItem("data"));
-  // console.log("data->", data);
-  console.log("ch->", id);
-  console.log("sort->", sort);
-  // console.log("i am sorting----->", sort);
-  // if (sort === "ase") {
-  //   data = "SELECT * FROM user order by id desc;";
-  // } else {
-  //   data = "select * from user";
-  // }
-  // db.query(data, (err, result) => {
-  //   if (err) {
-  //     return res.status(500).send(err);
-  //   } else {
-  //     console.log(result);
-  //     return res.status(200).send(result);
-  //   }
-  // });
-};
-
-// details
-// app.get("/api/get/:id", (req, res) => {
-//   const { id } = req.params;
-//   const sqlGet = "SELECT * FROM user WHERE id=?";
-//   db.query(sqlGet, id, (error, result) => {
-//     if (error) {
-//       console.log(error);
-//     }
-//     res.send(result);
-//   });
-// });
+exports.getEnergyBurn = (req, res) => {};

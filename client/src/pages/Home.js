@@ -9,33 +9,35 @@ const Home = () => {
   const [data, setData] = useState([]);
   const [sort, setSort] = useState("des");
   const [id, setId] = useState(0);
-  const loadData = async (id) => {
-    console.log(id);
+  const loadData = async () => {
+    const data = JSON.parse(localStorage.getItem("data"));
+    console.log("id---->", data._id);
     await axios
-      .get(`http://localhost:5000/api/get/${id}`)
+      .get(`http://localhost:5000/finduser/${data._id}`)
       .then((response) => {
-        console.log("=======>>", response.data);
-        setData(response.data);
+        console.log("=======>>", response);
+        setData(response.data.user_details);
       })
       .catch((err) => {
+        console.log("error------------>>>>");
         console.log("error", err);
       });
   };
   useEffect(() => {
-    const id = getId();
-    setId(id);
-    loadData(id);
+    // const id = getId();
+    // setId(id);
+    loadData();
   }, []);
 
-  const getId = () => {
-    const data = JSON.parse(localStorage.getItem("data"));
-    // console.log("clg-->", data[0].id);
-    return data[0].id;
-  };
+  // const getId = () => {
+
+  //   console.log("clg-->", data._id);
+  //   // return data[0]._id;
+  // };
 
   const deleteContact = (id) => {
     axios
-      .delete(`http://localhost:5000/api/remove/${id}`)
+      .delete(`http://localhost:5000/remove/${id}`)
       .then((response) => {
         console.log(response);
       })
@@ -69,43 +71,45 @@ const Home = () => {
       </div>
       <table className="styled-table">
         <thead>
-          <tr>
-            <th style={{ textAlign: "center" }}>No.</th>
-            <th style={{ textAlign: "center" }} onClick={sorting}>
-              date
-              {sort == "ase" ? <AiFillCaretUp /> : <AiFillCaretDown />}
-            </th>
-            <th style={{ textAlign: "center" }}>name</th>
-            <th style={{ textAlign: "center" }}>Intake Calorie</th>
-            <th style={{ textAlign: "center" }}>Target Intake Calorie</th>
-            <th style={{ textAlign: "center" }}>Burn Calorie</th>
-            <th style={{ textAlign: "center" }}>Target Burn Calorie</th>
-            <th style={{ textAlign: "center" }}>Action</th>
-          </tr>
+          {data.length > 0 ? (
+            <tr>
+              <th style={{ textAlign: "center" }}>No.</th>
+              <th style={{ textAlign: "center" }} onClick={sorting}>
+                date
+                {sort == "ase" ? <AiFillCaretUp /> : <AiFillCaretDown />}
+              </th>
+              <th style={{ textAlign: "center" }}>Intake Calorie</th>
+              <th style={{ textAlign: "center" }}>Target Intake Calorie</th>
+              <th style={{ textAlign: "center" }}>Burn Calorie</th>
+              <th style={{ textAlign: "center" }}>Target Burn Calorie</th>
+              <th style={{ textAlign: "center" }}>Action</th>
+            </tr>
+          ) : (
+            <h3>Empty Data</h3>
+          )}
         </thead>
         <tbody>
-          {data.map((item, index) => {
+          {data.map((val, index) => {
             return (
-              <tr key={item.id}>
-                <th scope="row">{item.id}</th>
-                <td>{item.date}</td>
-                <td>{item.name}</td>
-                <td>{item.intakecalorie}</td>
-                <td>{item.targetincalorie}</td>
-                <td>{item.burncalorie}</td>
-                <td>{item.targetburncalorie}</td>
+              <tr key={val.id}>
+                <th scope="row">{index + 1}</th>
+                <td>{val.date}</td>
+                <td>{val.intakecalorie}</td>
+                <td>{val.t_intakecalorie}</td>
+                <td>{val.burncalorie}</td>
+                <td>{val.t_burncalorie}</td>
                 <td>
-                  <Link to={`/update/${item.id}`}>
+                  <Link to={`/update/${val._id}`}>
                     <button className="btn1 btn-edit">Edit</button>
                   </Link>
                   <button
                     className="btn1 btn-delete"
-                    onClick={() => deleteContact(item.id)}
+                    onClick={() => deleteContact(val._id)}
                   >
                     Delete
                   </button>
 
-                  {/* <Link to={`/view/${item.id}`}>
+                  {/* <Link to={`/view/${val.id}`}>
                     <button className="btn btn-view">View</button>
                   </Link> */}
                 </td>

@@ -5,7 +5,7 @@ import "./style.css";
 const Today = () => {
   const [fooditem, setFooditem] = useState([]);
   const [energyburn, setEnergyburn] = useState([]);
-  const [ageCalorie, SetageCalorie] = useState({
+  const [ageCalorie, setAgeCalorie] = useState({
     adolescents: 3200,
     adult: 3000,
     old: 2500,
@@ -15,11 +15,11 @@ const Today = () => {
   const [data2, setData2] = useState([]);
   const [mainData, setMainData] = useState({
     date: "",
+    t_intakecalorie: 0,
     intakecalorie: 0,
-    targetincalorie: 0,
+    t_burncalorie: 0,
     burncalorie: 0,
-    targetburncalorie: 0,
-    fk: 0,
+    userId: "",
   });
   const [check, setCheck] = useState({
     loading: false,
@@ -45,7 +45,7 @@ const Today = () => {
 
   const getEnergyBurn = () => {
     axios
-      .get("http://localhost:5000/energyburn/get")
+      .get("http://localhost:5000/exercise/get")
       .then((res) => {
         console.log(res);
         setEnergyburn(res.data);
@@ -65,9 +65,10 @@ const Today = () => {
 
   const intake = (value) => {
     fooditem.map((val) => {
-      if (value === val.food) {
+      if (value === val.item) {
+        console.log("value--", val);
         let obj = {
-          food: val.food,
+          food: val.item,
           energy: val.calories,
         };
         setData1([...data1, obj]);
@@ -87,12 +88,12 @@ const Today = () => {
         console.log("valll", val);
         let obj = {
           activity: val.activity,
-          energy: val.calorieburn,
+          energy: val.calories,
         };
         setData2([...data2, obj]);
         setMainData({
           ...mainData,
-          burncalorie: mainData.burncalorie + val.calorieburn,
+          burncalorie: mainData.burncalorie + val.calories,
         });
         return null;
       }
@@ -110,15 +111,15 @@ const Today = () => {
     // setMainData({ ...mainData, date: today });
     const data = JSON.parse(localStorage.getItem("data"));
     // console.log("data-->", data[0].id);
-    setMainData({ ...mainData, date: today, fk: data[0].id });
-    setAge(data[0].age);
+    setMainData({ ...mainData, date: today, userId: data._id });
+    setAge(data.age);
     // console.log("ageee", data[0].age);
   };
 
   const saveData = () => {
-    console.log("=====>", mainData);
+    // console.log("=====>", mainData);
     axios
-      .post("http://localhost:5000/api/post", mainData)
+      .post("http://localhost:5000/add_caloriedetails", mainData)
       .then((res) => {
         console.log("res---", res);
         setCheck({ ...check, loading: false });
@@ -133,11 +134,10 @@ const Today = () => {
   const clearData = () => {
     let obj = {
       date: "",
-      // name: "",
+      t_intakecalorie: 0,
       intakecalorie: 0,
-      targetincalorie: 0,
+      t_burncalorie: 0,
       burncalorie: 0,
-      targetburncalorie: 0,
     };
     setMainData(obj);
     let obj1 = {
@@ -205,17 +205,17 @@ const Today = () => {
             <div className="inner-energy">
               <h4>Set Today's Target Energy Intake</h4>
               {check.setIntakeCalorie ? (
-                <h1>{mainData.targetincalorie}</h1>
+                <h1>{mainData.t_intakecalorie}</h1>
               ) : (
                 <div>
                   <input
                     className="inp1"
                     type="text"
-                    value={mainData.targetincalorie}
+                    value={mainData.t_intakecalorie}
                     onChange={(e) =>
                       setMainData({
                         ...mainData,
-                        targetincalorie: e.target.value,
+                        t_intakecalorie: e.target.value,
                       })
                     }
                   />
@@ -241,17 +241,17 @@ const Today = () => {
             <div className="inner-energy">
               <h4>Set Today's Target Energy Burn</h4>
               {check.setBurnCalorie ? (
-                <h1>{mainData.targetburncalorie}</h1>
+                <h1>{mainData.t_burncalorie}</h1>
               ) : (
                 <div>
                   <input
                     className="inp1"
                     type="text"
-                    value={mainData.targetburncalorie}
+                    value={mainData.t_burncalorie}
                     onChange={(e) =>
                       setMainData({
                         ...mainData,
-                        targetburncalorie: e.target.value,
+                        t_burncalorie: e.target.value,
                       })
                     }
                   />
@@ -284,7 +284,9 @@ const Today = () => {
                 onChange={(e) => intake(e.target.value)}
               >
                 <option value="Select item">select item</option>
-                {dropdown}
+                {fooditem.map((val, i) => {
+                  return <option value={val.item}>{val.item}</option>;
+                })}
               </select>
             </div>
             <div>
@@ -311,7 +313,9 @@ const Today = () => {
                 onChange={(e) => burn(e.target.value)}
               >
                 <option value="Select item">select item</option>
-                {dropdown1}
+                {energyburn.map((val, i) => {
+                  return <option value={val.activity}>{val.activity}</option>;
+                })}
               </select>
             </div>
 

@@ -74,7 +74,7 @@ function Login() {
       console.log(newUser);
       handleClose();
       axios
-        .post("http://localhost:5000/users", newUser)
+        .post("http://localhost:5000/register", newUser)
         .then((res) => {
           alert("Register successful");
           console.log(res);

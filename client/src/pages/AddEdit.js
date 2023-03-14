@@ -1,43 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import "./style.css";
+import "./addedit.css";
 import axios from "axios";
 
-const initialState = {
-  date: "",
-  name: "",
-  intakecalorie: "",
-  targetincalorie: "",
-  burncalorie: "",
-  targetburncalorie: "",
-};
-
 const AddEdit = () => {
-  const [state, setState] = useState(initialState);
-  const {
-    date,
-    name,
-    intakecalorie,
-    targetincalorie,
-    burncalorie,
-    targetburncalorie,
-  } = state;
-  const navigate = useNavigate();
+  const [state, setState] = useState({
+    t_intakecalorie: "",
+    intakecalorie: "",
+    t_burncalorie: "",
+    burncalorie: "",
+  });
+  // const navigate = useNavigate();
   const { id } = useParams();
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/api/get/${id}`)
-      .then((resp) => setState({ ...resp.data[0] }));
-  }, [id]);
+    getData();
+  }, []);
 
+  const getData = () => {
+    axios
+      .get(`http://localhost:5000/findone/${id}`)
+      .then((response) => {
+        console.log(response);
+        setState(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     if (
-      !intakecalorie ||
-      !targetincalorie ||
-      !burncalorie ||
-      !targetburncalorie
+      !state.t_intakecalorie ||
+      !state.intakecalorie ||
+      !state.t_burncalorie ||
+      !state.burncalorie
     ) {
       alert("Enter Value");
     } else {
@@ -51,30 +48,17 @@ const AddEdit = () => {
         alert("Added successful");
       } else {
         axios
-          .put(`http://localhost:5000/api/update/${id}`, {
-            date,
-            name,
-            intakecalorie,
-            targetincalorie,
-            burncalorie,
-            targetburncalorie,
-          })
+          .put(`http://localhost:5000/update/${id}`, state)
           .then(() => {
             setState({
-              name: "",
+              t_intakecalorie: "",
               intakecalorie: "",
-              targetincalorie: "",
+              t_burncalorie: "",
               burncalorie: "",
-              targetburncalorie: "",
             });
           })
           .catch((err) => console.log(err));
-        // toast.success("Details updated successfully");
       }
-
-      setTimeout(() => {
-        navigate("/");
-      }, 500);
     }
   };
   const handleInputChange = (e) => {
@@ -83,7 +67,10 @@ const AddEdit = () => {
   };
 
   return (
-    <div style={{ marginTop: "100px" }}>
+    <div>
+      <div>
+        <h2 className="d-flex justify-content-center">Edit Data</h2>
+      </div>
       <form
         style={{
           margin: "auto",
@@ -93,59 +80,65 @@ const AddEdit = () => {
         }}
         onSubmit={handleSubmit}
       >
-        <label htmlFor="name">Name</label>
-        {/* <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="Your name ..."
-          value={name || ""}
-          onChange={handleInputChange}
-        /> */}
+        <div>
+          <label htmlFor="t_intakecalorie">Target Calorie</label>
+          <br />
+          <input
+            type="number"
+            className="input"
+            id="t_intakecalorie"
+            name="t_intakecalorie"
+            placeholder="Your target calorie intake.."
+            value={state.t_intakecalorie || ""}
+            onChange={handleInputChange}
+          />
+        </div>
 
-        <label htmlFor="intakecalorie">Calorie Intake</label>
-        <input
-          type="text"
-          id="intakecalorie"
-          name="intakecalorie"
-          placeholder="Your intake calorie.."
-          value={intakecalorie || ""}
-          onChange={handleInputChange}
-        />
+        <div>
+          <label htmlFor="intakecalorie">Calorie Intake</label>
+          <br />
+          <input
+            type="number"
+            className="input"
+            id="intakecalorie"
+            name="intakecalorie"
+            placeholder="Your intake calorie.."
+            value={state.intakecalorie || ""}
+            onChange={handleInputChange}
+          />
+        </div>
 
-        <label htmlFor="targetincalorie">Target Calorie</label>
-        <input
-          type="text"
-          id="targetincalorie"
-          name="targetincalorie"
-          placeholder="Your target calorie intake.."
-          value={targetincalorie || ""}
-          onChange={handleInputChange}
-        />
+        <div>
+          <label htmlFor="t_burncalorie">Target Burn Calorie</label>
+          <br />
+          <input
+            type="number"
+            id="t_burncalorie"
+            name="t_burncalorie"
+            className="input"
+            placeholder="Your target burn calorie.."
+            value={state.t_burncalorie || ""}
+            onChange={handleInputChange}
+          />
+        </div>
 
-        <label htmlFor="burncalorie">Burn Calorie</label>
-        <input
-          type="number"
-          id="burncalorie"
-          name="burncalorie"
-          placeholder="Your burn calorie.."
-          value={burncalorie || ""}
-          onChange={handleInputChange}
-        />
-
-        <label htmlFor="targetburncalorie">Target Burn Calorie</label>
-        <input
-          type="number"
-          id="targetburncalorie"
-          name="targetburncalorie"
-          placeholder="Your target burn calorie.."
-          value={targetburncalorie || ""}
-          onChange={handleInputChange}
-        />
+        <div>
+          <label htmlFor="burncalorie">Burn Calorie</label>
+          <br />
+          <input
+            type="number"
+            className="input"
+            id="burncalorie"
+            name="burncalorie"
+            placeholder="Your burn calorie.."
+            value={state.burncalorie || ""}
+            onChange={handleInputChange}
+          />
+        </div>
 
         <Link to="/api/update"></Link>
         <input type="submit" value={id ? "Update" : "Save"} />
-        <Link to="/">
+        <Link to="/home">
           <input type="button" value="Go back" />
         </Link>
       </form>
